@@ -53,6 +53,8 @@ public class MainClient extends javax.swing.JFrame {
             out=new PrintWriter(c.getOutputStream(),true);//auto flush
             json = new JSONObject();
             json.put("tipo_operacion","0");
+            json.put("estado","0");
+            json.put("mensaje","ok");
             json.put("username",username);
             json.put("password",password);
             out.println(json.toString());
@@ -66,7 +68,7 @@ public class MainClient extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null,json.get("mensaje"));
                 System.exit(0);
             }
-            clientSocket = new DatagramSocket(serverPort);
+            clientSocket = new DatagramSocket();
         }catch(Exception e){
             System.out.println(e);
             JOptionPane.showMessageDialog(null,"No se pudo conectar al servidor: "+e.toString());
@@ -85,7 +87,7 @@ public class MainClient extends javax.swing.JFrame {
         System.out.println(nlist);
         for(int x=0;x<nlist.size();x++)
         {
-            if(!nlist.get(x).trim().equals(""))
+            if(!nlist.get(x).trim().equals("") && !nlist.get(x).trim().equals(username))
             {
                 ((DefaultTableModel)namelist.getModel()).addRow(new Object[]{});
                 ((DefaultTableModel)namelist.getModel()).setValueAt(nlist.get(x), row, 0);
@@ -225,14 +227,14 @@ public class MainClient extends javax.swing.JFrame {
 
     private void getUserConnectionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getUserConnectionsActionPerformed
         byte[] receiveData = new byte[1024];
-        sendDatagramToServer(serverIP,serverPort,"0","1","ok");
+        sendDatagramToServer(serverIP,puertoServidorUDP,"0","1","ok");
         try{
             DatagramPacket receivePacket=new DatagramPacket(receiveData, receiveData.length);
             clientSocket.setSoTimeout(10000);
             clientSocket.receive(receivePacket);
             String respuesta = new String(receivePacket.getData());
             json=new JSONObject(respuesta);
-            nlist= Arrays.asList(json.getString("clients").substring(1,json.getString("clients").length()-1).split(","));
+            nlist= Arrays.asList(json.getString("dato").substring(1,json.getString("dato").length()-1).split(","));
             loadList();
         }catch(Exception e){
             JOptionPane.showMessageDialog(null,e.getMessage());
@@ -268,7 +270,6 @@ public class MainClient extends javax.swing.JFrame {
     private DatagramSocket clientSocket;
     private BufferedReader brc;
     private String serverIP,username,password;
-    private int serverPort;
     private JSONObject json;
     private ReadThread r;
     private PrintWriter out;
@@ -276,11 +277,12 @@ public class MainClient extends javax.swing.JFrame {
     
     public void sendDatagramToServer(String serverIP,int serverPort,String estado,String tipo_operacion,String mensaje){
         try{
-            byte[] sendData = new byte[5000];
+            byte[] sendData = new byte[1024];
             json = new JSONObject();
             json.put("estado", estado);
             json.put("tipo_operacion",tipo_operacion);
             json.put("mensaje", mensaje);
+            json.put("dato", "");
             String datoPaquete = json.toString();
             sendData = datoPaquete.getBytes();
             InetAddress IPAddress = InetAddress.getByName(serverIP);
@@ -305,9 +307,6 @@ public class MainClient extends javax.swing.JFrame {
                     try{
                         JSONObject json = new JSONObject(msg);
                         System.out.println(json.toString());
-                        if(json.getString("tipo_operacion").equals("1")) {
-                           
-                        }
                     }catch(Exception e){System.out.println(e);}
                 }
             }catch(Exception e){System.out.println(e);}

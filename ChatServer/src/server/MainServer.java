@@ -447,7 +447,7 @@ public class MainServer extends javax.swing.JFrame {
                     username=json.getString("username");
                     password=json.getString("password");
                     loginUser(username,password);
-                    sendMessageToClient(c, "0", "0", "ok");
+                    sendMessageToClient(c, "0", "0", "ok", "");
                     slist.add(c);
                     nlist.add(username);
                     loadList();
@@ -455,7 +455,7 @@ public class MainServer extends javax.swing.JFrame {
                     t.start();
                     tid++;
                 } catch (Exception e) {
-                    sendMessageToClient(c, "1", "0", e.getMessage());
+                    sendMessageToClient(c, "1", "0", "1", e.getMessage());
                 }
 
             }
@@ -504,12 +504,13 @@ public class MainServer extends javax.swing.JFrame {
                 }catch(Exception e){}
             }
         }
-        public void sendMessageToClient(Socket c, String estado, String tipo_operacion, String mensaje){
+        public void sendMessageToClient(Socket c, String estado, String tipo_operacion, String mensaje, String dato){
             try{
                 json = new JSONObject();
                 json.put("estado", estado);
                 json.put("tipo_operacion", tipo_operacion);
                 json.put("mensaje", mensaje);
+                json.put("dato", dato);
                 out=new PrintWriter(c.getOutputStream(),true);
                 out.println(json.toString());
             }catch(Exception e){}
@@ -541,22 +542,25 @@ public class MainServer extends javax.swing.JFrame {
                     d.receive(receivePacket);
                     String datoRecibido = new String(receivePacket.getData());
                     json=new JSONObject(datoRecibido);
+                    System.out.println(json.toString());
                     if (json.get("tipo_operacion").equals("1")){
                         InetAddress IPAddress = receivePacket.getAddress();
                         int port = receivePacket.getPort();
                         sendDatagramToUser(IPAddress, port,"0","1", nlist.toString());
                     }
-                }catch(Exception e){}      
+                }catch(Exception e){JOptionPane.showMessageDialog(null,e.getMessage());}      
             }
         }
-        public void sendDatagramToUser(InetAddress IPAddress, int port, String estado, String tipo_operacion, String mensaje){
+        public void sendDatagramToUser(InetAddress IPAddress, int port, String estado, String tipo_operacion, String dato){
             try{
                 json = new JSONObject();
                 json.put("estado", estado);
                 json.put("tipo_operacion",tipo_operacion);
-                json.put("mensaje","mensaje");
+                json.put("mensaje","ok");
+                json.put("dato",dato);
                 sendData = json.toString().getBytes();
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress,port);
+                d.send(sendPacket);
             }catch(Exception e){}
         }
     }
