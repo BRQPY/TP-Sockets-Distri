@@ -496,7 +496,24 @@ public class MainServer extends javax.swing.JFrame {
                     while((msg=brc.readLine())!=null)
                     {
                         json=new JSONObject(msg);
-                        sendToAllClients("["+username+"] : "+msg);
+                        System.out.println("Recibido Servidor: "+json.toString());
+                        //sendToAllClients("["+username+"] : "+msg);
+                        String mensaje = json.getString("mensaje");
+                        String destino = json.getString("destino");
+                        Socket socketDestino;
+                        for (int i=0;i<nlist.size();i++){
+                            if (unlist.get(i).equals(destino)){
+                                try{
+                                    socketDestino = slist.get(i);
+                                    out=new PrintWriter(socketDestino.getOutputStream(),true);
+                                    out.println(json.toString());
+                                }catch(Exception e){}
+                                
+                            }
+                        
+                        }
+                        
+                        
                     }
                 for (int i=0;i<nlist.size();i++){
                     if (unlist.get(i).equals(username)){
@@ -511,6 +528,7 @@ public class MainServer extends javax.swing.JFrame {
         }
         public void sendToAllClients(String message)
         {
+            System.out.println("ENTROOOOOOOOOOOOOOOOOOO");
             Socket so;
             PrintWriter out;
             for(int x=0;x<slist.size();x++)

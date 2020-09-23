@@ -61,9 +61,21 @@ public class MainClient extends javax.swing.JFrame {
             login_reply=brc.readLine();
             json = new JSONObject(login_reply);
             if(json.get("estado").equals("0")){
-                r=new ReadThread();
-                r.start();
-                setTitle("Usuario: " + username); 
+               //r=new ReadThread();         
+                //r.start();
+                setTitle("Usuario: " + username);
+                String estado = "0";
+                while(estado.equals("0")){
+                    String orden=brc.readLine();//espera orden
+                    JSONObject ordenJson = new JSONObject(orden);
+                    /*
+                    if(){
+                            ir a funcion para recibir llamada implica aceptar o retornar
+                    if orden es realizar llamada
+                            ir a funcion de realizar llamada
+                      */              
+                }
+                            
             }else{
                 JOptionPane.showMessageDialog(null,json.get("mensaje"));
                 System.exit(0);
@@ -75,6 +87,27 @@ public class MainClient extends javax.swing.JFrame {
             System.exit(0);
         }
     }
+        
+    public void initCall(){
+            String fromUser;
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+            r=new ReadThread();
+            r.start();
+            try{
+                while ((fromUser = stdIn.readLine()) != null) {
+                    System.out.println("Cliente: " + fromUser);
+                    //escribimos al servidor
+                    JSONObject salida = new JSONObject();
+                    salida.put("estado", "0");
+                    salida.put("tipo_operacion", "2");
+                    salida.put("destino", "User2");
+                    salida.put("mensaje", fromUser);
+                    out=new PrintWriter(c.getOutputStream(),true);
+                    out.println(salida.toString());
+                }
+            }catch(Exception e){System.out.println(e);}
+    }
+        
     
     public void loadList()
     {
@@ -232,7 +265,9 @@ public class MainClient extends javax.swing.JFrame {
             String respuesta = new String(receivePacket.getData());
             json=new JSONObject(respuesta);
             nlist= Arrays.asList(json.getString("dato").substring(1,json.getString("dato").length()-1).split(","));
+            System.out.println("LLega1");
             loadList();
+            
         }catch(Exception e){
             JOptionPane.showMessageDialog(null,e.getMessage());
         }
@@ -294,6 +329,7 @@ public class MainClient extends javax.swing.JFrame {
            String msg;
            try
            {
+                System.out.println("LLega porfa");
                 while((msg=brc.readLine())!=null)
                 {
                     if(msg.equals("f73d5eab4fa29ffd6014aac366cc48de")){
@@ -301,8 +337,11 @@ public class MainClient extends javax.swing.JFrame {
                         System.exit(0);
 
                     }
+                    //if termino la llamada
+                        //retornar con el valor del estado nuevo
                     try{
                         JSONObject json = new JSONObject(msg);
+                        System.out.println(json.toString());
                     }catch(Exception e){System.out.println(e);}
                 }
             }catch(Exception e){System.out.println(e);}
