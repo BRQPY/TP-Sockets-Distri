@@ -78,13 +78,11 @@ public class MainClient extends javax.swing.JFrame {
     
     public void loadList()
     {
-        System.out.println(nlist);
         while(namelist.getRowCount()>0)
         {
             ((DefaultTableModel)namelist.getModel()).removeRow(0);
         }
         int row=0;
-        System.out.println(nlist);
         for(int x=0;x<nlist.size();x++)
         {
             if(!nlist.get(x).trim().equals("") && !nlist.get(x).trim().equals(username))
@@ -137,11 +135,11 @@ public class MainClient extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Usuarios conectados", "Estado"
+                "Usuarios conectados"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -151,7 +149,6 @@ public class MainClient extends javax.swing.JFrame {
         jScrollPane3.setViewportView(namelist);
         if (namelist.getColumnModel().getColumnCount() > 0) {
             namelist.getColumnModel().getColumn(0).setResizable(false);
-            namelist.getColumnModel().getColumn(1).setResizable(false);
         }
 
         jPanel2.add(jScrollPane3, java.awt.BorderLayout.CENTER);
@@ -306,7 +303,6 @@ public class MainClient extends javax.swing.JFrame {
                     }
                     try{
                         JSONObject json = new JSONObject(msg);
-                        System.out.println(json.toString());
                     }catch(Exception e){System.out.println(e);}
                 }
             }catch(Exception e){System.out.println(e);}

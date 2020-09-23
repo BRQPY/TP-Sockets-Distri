@@ -33,6 +33,7 @@ public class MainServer extends javax.swing.JFrame {
             s=new ServerSocket(puertoServidorTCP);
             slist=new ArrayList<>();
             nlist=new ArrayList<>();
+            unlist=new ArrayList<>();
             h=new HandleClientTCP();
             h.start();
             d=new DatagramSocket(puertoServidorUDP);
@@ -314,7 +315,17 @@ public class MainServer extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    
+    public class UserConnected{
+        String username;
+        String status;
+        String calling;
+        UserConnected(String username, String status, String calling){
+            this.username = username;
+            this.status = status;
+            this.calling = calling;
+        }
+    }
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         try {
             
@@ -377,7 +388,8 @@ public class MainServer extends javax.swing.JFrame {
     private String username;
     private String password;
     private ArrayList<Socket> slist;
-    private ArrayList<String> nlist;
+    private ArrayList<UserConnected> nlist;
+    private ArrayList<String> unlist;
     private BufferedReader brc;
     private PrintWriter out;
     private HandleClientTCP h;
@@ -424,12 +436,12 @@ public class MainServer extends javax.swing.JFrame {
         int row=0;
         for(int x=0;x<nlist.size();x++)
         {
-            if(!nlist.get(x).equals(""))
-            {
-                ((DefaultTableModel)namelist.getModel()).addRow(new Object[]{});
-                ((DefaultTableModel)namelist.getModel()).setValueAt(nlist.get(x), row, 0);
-                 row++;
-            }
+            UserConnected u = nlist.get(x);
+            ((DefaultTableModel)namelist.getModel()).addRow(new Object[]{});
+            ((DefaultTableModel)namelist.getModel()).setValueAt(u.username, row, 0);
+            ((DefaultTableModel)namelist.getModel()).setValueAt(u.status, row, 1);
+            ((DefaultTableModel)namelist.getModel()).setValueAt(u.calling, row, 2);
+            row++;
         }
     }
     
@@ -449,7 +461,8 @@ public class MainServer extends javax.swing.JFrame {
                     loginUser(username,password);
                     sendMessageToClient(c, "0", "0", "ok", "");
                     slist.add(c);
-                    nlist.add(username);
+                    unlist.add(username);
+                    nlist.add(new UserConnected(username, "Libre",""));
                     loadList();
                     ProcessClient t=new ProcessClient(tid, username, c, password);
                     t.start();
@@ -485,8 +498,13 @@ public class MainServer extends javax.swing.JFrame {
                         json=new JSONObject(msg);
                         sendToAllClients("["+username+"] : "+msg);
                     }
-                    sendToAllClients(username+ " Left Chat");
-                nlist.set(id, "");
+                for (int i=0;i<nlist.size();i++){
+                    if (unlist.get(i).equals(username)){
+                        unlist.remove(i);
+                        nlist.remove(i);
+                        break;
+                    }
+                }
                 loadList();
                }catch(Exception e){}
             }
@@ -546,7 +564,9 @@ public class MainServer extends javax.swing.JFrame {
                     if (json.get("tipo_operacion").equals("1")){
                         InetAddress IPAddress = receivePacket.getAddress();
                         int port = receivePacket.getPort();
-                        sendDatagramToUser(IPAddress, port,"0","1", nlist.toString());
+                        json = new JSONObject();
+                        System.out.println(unlist);
+                        sendDatagramToUser(IPAddress, port,"0","1", unlist.toString());
                     }
                 }catch(Exception e){JOptionPane.showMessageDialog(null,e.getMessage());}      
             }
