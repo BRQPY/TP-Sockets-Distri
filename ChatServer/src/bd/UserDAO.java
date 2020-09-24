@@ -123,7 +123,7 @@ public class UserDAO {
             conn = Bd.connect();
             PreparedStatement pstmt = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
             pstmt.setInt(1, getNextId());
-            pstmt.setString(2, u.getUsername());
+            pstmt.setString(2, u.getUsername().trim());
             pstmt.setString(3, u.getPassword());
             int affectedRows = pstmt.executeUpdate();
             // check the affected rows 

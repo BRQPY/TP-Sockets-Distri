@@ -13,10 +13,12 @@ import java.net.*;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.*;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.awt.event.*;
 
 public class MainClient extends javax.swing.JFrame {
     int puertoServidorTCP = 1565;
@@ -88,7 +90,7 @@ public class MainClient extends javax.swing.JFrame {
             if(!nlist.get(x).trim().equals("") && !nlist.get(x).trim().equals(username))
             {
                 ((DefaultTableModel)namelist.getModel()).addRow(new Object[]{});
-                ((DefaultTableModel)namelist.getModel()).setValueAt(nlist.get(x), row, 0);
+                ((DefaultTableModel)namelist.getModel()).setValueAt(nlist.get(x).trim(), row, 0);
                  row++;
             }
         }
@@ -108,15 +110,14 @@ public class MainClient extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         namelist = new javax.swing.JTable();
         getUserConnections = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        callClient = new javax.swing.JButton();
         call_window = new javax.swing.JInternalFrame();
         jScrollPane1 = new javax.swing.JScrollPane();
         display = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
         txtmsg = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        send = new javax.swing.JButton();
+        endCall = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Client Window[]");
@@ -161,13 +162,13 @@ public class MainClient extends javax.swing.JFrame {
         });
         jPanel2.add(getUserConnections, java.awt.BorderLayout.PAGE_START);
 
-        jButton2.setText("Llamar");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        callClient.setText("Llamar");
+        callClient.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                callClientActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton2, java.awt.BorderLayout.LINE_END);
+        jPanel2.add(callClient, java.awt.BorderLayout.LINE_END);
 
         call_window.setVisible(true);
 
@@ -179,22 +180,24 @@ public class MainClient extends javax.swing.JFrame {
         call_window.getContentPane().add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
         txtmsg.setBackground(new java.awt.Color(255, 255, 204));
-        txtmsg.setColumns(45);
+        txtmsg.setColumns(55);
         jPanel1.add(txtmsg);
 
-        jButton1.setText("Enviar");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        send.setText("Enviar");
+        send.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                sendActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton1);
+        jPanel1.add(send);
 
-        jButton4.setText("Contestar llamada");
-        jPanel1.add(jButton4);
-
-        jButton3.setText("Finalizar llamada");
-        jPanel1.add(jButton3);
+        endCall.setText("Finalizar llamada");
+        endCall.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                endCallActionPerformed(evt);
+            }
+        });
+        jPanel1.add(endCall);
 
         call_window.getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
@@ -208,19 +211,34 @@ public class MainClient extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         try
         {
+            json = new JSONObject();
+            json.put("tipo_operacion","4");
+            json.put("estado","0");
+            json.put("mensaje","ok");
+            json.put("dato", "{}");
+            out.println(json.toString());
             c.close();
             System.exit(0);
         }catch(Exception e){}
     }//GEN-LAST:event_formWindowClosing
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendActionPerformed
         if(!txtmsg.getText().equals(""))
         {
-            out.println(txtmsg.getText());
-            txtmsg.setText("");
-            txtmsg.requestFocus();
+            try{
+                json = new JSONObject();
+                json.put("tipo_operacion","3");
+                json.put("estado","0");
+                json.put("mensaje","ok");
+                json.put("dato", txtmsg.getText());
+                out.println(json.toString());
+                txtmsg.setText("");
+                txtmsg.requestFocus();
+            }catch(Exception e){
+                
+            }
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_sendActionPerformed
 
     private void getUserConnectionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getUserConnectionsActionPerformed
         byte[] receiveData = new byte[1024];
@@ -238,9 +256,37 @@ public class MainClient extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_getUserConnectionsActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void callClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_callClientActionPerformed
+        if (namelist.getSelectedRow() == -1){
+            JOptionPane.showMessageDialog(null,"Seleccione un usuario para llamar");
+        }else{
+            String call_to = String.valueOf(((DefaultTableModel)namelist.getModel()).getValueAt(namelist.getSelectedRow(), 0));
+            try{
+                json = new JSONObject();
+                json.put("tipo_operacion","2");
+                json.put("estado","0");
+                json.put("mensaje","ok");
+                JSONObject dato = new JSONObject();
+                dato.put("from_user", username);
+                dato.put("to_user",call_to);
+                json.put("dato", dato.toString());
+                out.println(json.toString());
+            }catch(Exception e){
+                JOptionPane.showMessageDialog(null,e.getMessage());
+            }
+        }
+    }//GEN-LAST:event_callClientActionPerformed
+
+    private void endCallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endCallActionPerformed
+        try{
+            json = new JSONObject();
+            json.put("tipo_operacion","4");
+            json.put("estado","0");
+            json.put("mensaje","ok");
+            json.put("dato", "{}");
+            out.println(json.toString());
+         }catch(Exception e){}
+    }//GEN-LAST:event_endCallActionPerformed
 
     /**
      * @param args the command line arguments
@@ -248,19 +294,18 @@ public class MainClient extends javax.swing.JFrame {
   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton callClient;
     private javax.swing.JInternalFrame call_window;
     private javax.swing.JTextArea display;
+    private javax.swing.JButton endCall;
     private javax.swing.JButton getUserConnections;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable namelist;
+    private javax.swing.JButton send;
     private javax.swing.JTextField txtmsg;
     // End of variables declaration//GEN-END:variables
     private Socket c;
@@ -299,13 +344,83 @@ public class MainClient extends javax.swing.JFrame {
                     if(msg.equals("f73d5eab4fa29ffd6014aac366cc48de")){
                         JOptionPane.showMessageDialog(null,"El servidor ha finalizado la conexión\nSaliendo...");
                         System.exit(0);
-
                     }
                     try{
                         JSONObject json = new JSONObject(msg);
+                        if(json.get("tipo_operacion").equals("2")){
+                            //iniciar llamada
+                            if (json.get("estado").equals("0")){
+                                JSONObject dato = new JSONObject(json.get("dato").toString());
+                                if(dato.get("tipo").equals("emisor")){
+                                    display.append(dato.get("mensaje").toString()+"\n");
+                                }else{
+                                    final JOptionPane show_msg = new JOptionPane(dato.get("mensaje").toString(), JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION);
+                                    final JDialog dlg = show_msg.createDialog("Llamada entrante");
+                                    dlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+                                    dlg.addComponentListener(new ComponentAdapter() {
+                                        @Override
+                                        public void componentShown(ComponentEvent e) {
+                                            super.componentShown(e);
+                                            final Timer t = new Timer(15000,new ActionListener() {
+                                                @Override
+                                                public void actionPerformed(ActionEvent e) {
+                                                    dlg.setVisible(false);
+                                                }
+                                            });
+                                            t.start();
+                                        }
+                                    });
+                                    dlg.setVisible(true);
+                                    String rsp = show_msg.getValue().toString();
+                                    if (rsp.equals("0")){
+                                        sendMessageToServer(c,"0","5","ok","{}");
+                                    }else if (rsp.equals("1")){
+                                        sendMessageToServer(c,"1","5","rechazado","{}");
+                                    }else{
+                                        sendMessageToServer(c,"2","5","no atendido","{}");
+                                    }
+                                }
+                            }else{
+                                JOptionPane.showMessageDialog(null,json.get("dato"));
+                            }
+                        }else if(json.get("tipo_operacion").equals("3")){
+                            //conversar
+                            if(!json.get("estado").equals("99")){
+                                display.append(json.get("dato") + "\n");
+                            }else{
+                                JOptionPane.showMessageDialog(null,json.get("dato"));
+                            }
+                        }else if(json.get("tipo_operacion").equals("4")){
+                            //terminar llamada
+                            if(!json.get("estado").equals("99")){
+                                JSONObject dato = new JSONObject(json.get("dato").toString());
+                                dato = new JSONObject(json.get("dato").toString());
+                                JOptionPane.showMessageDialog(null,dato.get("mensaje"));
+                                display.append(dato.get("mensaje") + "\n");
+                            }else{
+                                JOptionPane.showMessageDialog(null,json.get("dato"));
+                            }
+                        }else if(json.get("tipo_operacion").equals("5")){
+                            display.setText("");
+                            JSONObject dato = new JSONObject(json.get("dato").toString());
+                            display.append(dato.get("mensaje") + "\n");
+                        }
                     }catch(Exception e){System.out.println(e);}
                 }
             }catch(Exception e){System.out.println(e);}
         }
+        public void sendMessageToServer(Socket c, String estado, String tipo_operacion, String mensaje, String dato){
+            try{ 
+                json = new JSONObject();
+                json.put("estado", estado);
+                json.put("tipo_operacion",tipo_operacion);
+                json.put("mensaje", mensaje);
+                json.put("dato", dato);
+                out=new PrintWriter(c.getOutputStream(),true);//auto flush
+                out.println(json.toString());
+            }catch(Exception e){
+                JOptionPane.showMessageDialog(null,"Error al enviar mensaje al servidor: "+e.getMessage());
+            }
+       }
     }
 }

@@ -81,7 +81,7 @@
                           <EmptySpace min="-2" pref="80" max="-2" attributes="0"/>
                           <Component id="jButton1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="jButton2" min="-2" max="-2" attributes="0"/>
+                          <Component id="listComands" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace pref="32" max="32767" attributes="0"/>
@@ -98,10 +98,10 @@
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="cid" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jButton2" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="listComands" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="sendToAll" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="48" max="32767" attributes="0"/>
+                  <EmptySpace pref="51" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -135,10 +135,13 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JButton" name="jButton2">
+        <Component class="javax.swing.JButton" name="listComands">
           <Properties>
             <Property name="text" type="java.lang.String" value="Ver comandos"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="listComandsActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JCheckBox" name="sendToAll">
           <Properties>
@@ -161,7 +164,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="jScrollPane1" alignment="0" pref="356" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" alignment="0" pref="359" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -263,7 +266,7 @@
                   </Group>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="createUser" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="48" max="32767" attributes="0"/>
+                  <EmptySpace pref="51" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

@@ -56,7 +56,7 @@ public class MainServer extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         cid = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
+        listComands = new javax.swing.JButton();
         sendToAll = new javax.swing.JCheckBox();
         jInternalFrame2 = new javax.swing.JInternalFrame();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -99,7 +99,12 @@ public class MainServer extends javax.swing.JFrame {
         cid.setEditable(false);
         cid.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
 
-        jButton2.setText("Ver comandos");
+        listComands.setText("Ver comandos");
+        listComands.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                listComandsActionPerformed(evt);
+            }
+        });
 
         sendToAll.setText("Enviar a todos");
 
@@ -120,7 +125,7 @@ public class MainServer extends javax.swing.JFrame {
                         .addGap(80, 80, 80)
                         .addComponent(jButton1)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton2)))
+                        .addComponent(listComands)))
                 .addContainerGap(32, Short.MAX_VALUE))
         );
         jInternalFrame1Layout.setVerticalGroup(
@@ -133,9 +138,9 @@ public class MainServer extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(cid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1)
-                    .addComponent(jButton2)
+                    .addComponent(listComands)
                     .addComponent(sendToAll))
-                .addContainerGap(48, Short.MAX_VALUE))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
 
         jInternalFrame2.setTitle("Usuarios conectados");
@@ -177,7 +182,7 @@ public class MainServer extends javax.swing.JFrame {
         );
         jInternalFrame2Layout.setVerticalGroup(
             jInternalFrame2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
         );
 
         jInternalFrame3.setTitle("Crear usuario");
@@ -232,7 +237,7 @@ public class MainServer extends javax.swing.JFrame {
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(createUser)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
 
         jInternalFrame4.setTitle("Modificar contraseña de usuario");
@@ -379,6 +384,13 @@ public class MainServer extends javax.swing.JFrame {
         
     }//GEN-LAST:event_createUserActionPerformed
 
+    private void listComandsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listComandsActionPerformed
+        String text = new String();
+        text += "desconectar\n";
+        text += "terminar_llamada";
+        JOptionPane.showMessageDialog(null,text);
+    }//GEN-LAST:event_listComandsActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -401,7 +413,6 @@ public class MainServer extends javax.swing.JFrame {
     private javax.swing.JTextField cid;
     private javax.swing.JButton createUser;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JInternalFrame jInternalFrame2;
     private javax.swing.JInternalFrame jInternalFrame3;
@@ -412,6 +423,7 @@ public class MainServer extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton listComands;
     private javax.swing.JButton modifyUser;
     private javax.swing.JTable namelist;
     private javax.swing.JTextField password_create;
@@ -444,7 +456,14 @@ public class MainServer extends javax.swing.JFrame {
             row++;
         }
     }
-    
+    public int getPositionOfClient(String username){
+        for(int i=0;i<unlist.size();i++){
+            if(unlist.get(i).equals(username)){
+                return i;
+            }
+        }
+        return -1;
+    }
     class HandleClientTCP extends Thread
     {
         private int tid;
@@ -456,7 +475,7 @@ public class MainServer extends javax.swing.JFrame {
                     c=s.accept();
                     brc=new BufferedReader(new InputStreamReader(c.getInputStream()));
                     JSONObject json = new JSONObject(brc.readLine());
-                    username=json.getString("username");
+                    username=json.getString("username").trim();
                     password=json.getString("password");
                     loginUser(username,password);
                     sendMessageToClient(c, "0", "0", "ok", "");
@@ -496,18 +515,109 @@ public class MainServer extends javax.swing.JFrame {
                     while((msg=brc.readLine())!=null)
                     {
                         json=new JSONObject(msg);
-                        sendToAllClients("["+username+"] : "+msg);
+                        if (json.get("tipo_operacion").equals("2")){
+                            //iniciar llamada
+                            JSONObject dato = new JSONObject(json.get("dato").toString());
+                            try{
+                                initCall(c,dato.get("from_user").toString(),dato.get("to_user").toString());
+                            }catch(Exception e){
+                                sendMessageToClient(c,"4","2","",e.getMessage());
+                            }
+                        } else if (json.get("tipo_operacion").equals("3")) {
+                            //conversar
+                            Socket to_socket = new Socket();
+                            String to_user = new String();
+                            if (getPositionOfClient(username)!=-1){
+                                to_user = nlist.get(getPositionOfClient(username)).calling;
+                                if (getPositionOfClient(to_user)!=-1){
+                                    to_socket = slist.get(getPositionOfClient(to_user));
+                                    sendMessageUserToUser(c,to_socket,username,to_user,"["+username+"]: "+json.get("dato"));
+                                }else{
+                                    sendMessageToClient(c,"99","3","no existe llamada","no se encuentra en una llamada");
+                                }
+                            }
+                        } else if (json.get("tipo_operacion").equals("4")) {
+                            //terminar llamada
+                            Socket to_socket = new Socket();
+                            String to_user = new String();
+                            if (getPositionOfClient(username)!=-1){
+                                to_user = nlist.get(getPositionOfClient(username)).calling;
+                                if (getPositionOfClient(to_user)!=-1){
+                                    to_socket = slist.get(getPositionOfClient(to_user));
+                                    endCall(c,to_socket,username,to_user,"0");  
+                                }else{
+                                    sendMessageToClient(c,"99","3","no existe llamada","no se encuentra en una llamada");
+                                }
+                            }
+                        } else if (json.get("tipo_operacion").equals("5")) {
+                            //contestar llamada
+                            Socket to_socket = new Socket();
+                            String to_user = new String();
+                            if (getPositionOfClient(username)!=-1){
+                                to_user = nlist.get(getPositionOfClient(username)).calling;
+                                if (getPositionOfClient(to_user)!=-1){
+                                    to_socket = slist.get(getPositionOfClient(to_user));
+                                }
+                            }
+                            if (json.get("estado").equals("0")){
+                                //llamada contestada
+                                answerCall(username,to_user,c,to_socket);
+                            }else if(json.get("estado").equals("1")){
+                                //llamada rechazada
+                                endCall(c,to_socket,username,to_user,"1");  
+                            }else if(json.get("estado").equals("2")){
+                                //llamada no contestada
+                                endCall(c,to_socket,username,to_user,"2");
+                            }
+                        } 
                     }
-                for (int i=0;i<nlist.size();i++){
-                    if (unlist.get(i).equals(username)){
-                        unlist.remove(i);
-                        nlist.remove(i);
-                        break;
-                    }
+                    removeClient(getPositionOfClient(username));
+                    loadList();
+                }catch(Exception e){sendMessageToClient(c,"4","2","",e.getMessage());}
+            }
+        }
+        public void removeClient(int i){
+            unlist.remove(i);
+            nlist.remove(i);
+            slist.remove(i);
+        }
+        public void answerCall(String from_user,String to_user,Socket from_socket,Socket to_socket){
+            try{
+                nlist.get(getPositionOfClient(from_user)).status = "Ocupado";
+                nlist.get(getPositionOfClient(to_user)).status = "Ocupado";
+                loadList();
+                JSONObject dato = new JSONObject();
+                dato.put("mensaje", "Llamada iniciada con "+to_user);
+                sendMessageToClient(from_socket,"0","5","ok",dato.toString());
+                dato = new JSONObject();
+                dato.put("mensaje","Llamada iniciada con "+from_user);
+                sendMessageToClient(to_socket,"0","5","ok",dato.toString());
+            }catch(Exception e){}
+        }
+        public void endCall(Socket from_socket,Socket to_socket,String from_user,String to_user,String code){
+            JSONObject dato;
+            try{
+                nlist.get(getPositionOfClient(from_user)).status="Libre";
+                nlist.get(getPositionOfClient(from_user)).calling="";
+                nlist.get(getPositionOfClient(to_user)).status="Libre";
+                nlist.get(getPositionOfClient(to_user)).calling="";
+                if(code.equals("0")){
+                    dato = new JSONObject();
+                    dato.put("mensaje","Llamada finalizada");
+                    sendMessageToClient(to_socket,"0","4","ok",dato.toString());
+                    sendMessageToClient(from_socket,"0","4","ok",dato.toString());
+                    
+                }else if(code.equals("1")){
+                    dato = new JSONObject();
+                    dato.put("mensaje","Llamada rechazada");
+                    sendMessageToClient(to_socket,"1","4","rechazado",dato.toString());
+                }else if(code.equals("2")){
+                    dato = new JSONObject();
+                    dato.put("mensaje","Llamada no contestada");
+                    sendMessageToClient(to_socket,"2","4","no contestado",dato.toString());
                 }
                 loadList();
-               }catch(Exception e){}
-            }
+            }catch(Exception e){sendMessageToClient(to_socket,"3","4","error",e.getMessage());}
         }
         public void sendToAllClients(String message)
         {
@@ -540,11 +650,50 @@ public class MainServer extends javax.swing.JFrame {
             }
             throw new Exception("El usuario o la contraseña no son válidos");
         }
-        public void initCall(){
+        public void initCall(Socket c, String from_user, String to_user) throws Exception{
+            Socket to_socket = new Socket();
+            for(int i=0;i<unlist.size();i++){
+                if(unlist.get(i).equals(from_user)){
+                    if (!nlist.get(i).status.equals("Libre")){
+                        throw new Exception("Usted ya se encuentra en una llamada");
+                    }else{
+                        nlist.get(i).status = "Llamando";
+                        nlist.get(i).calling = to_user;
+                    }
+                }
+                if(unlist.get(i).equals(to_user)){
+                    if (!nlist.get(i).status.equals("Libre")){
+                        throw new Exception("Usuario "+to_user+" ocupado");
+                    }else{
+                         nlist.get(i).status = "Llamada entrante";
+                         nlist.get(i).calling = from_user;
+                         to_socket = slist.get(i);
+                    }
+                }
+            }
+            JSONObject dato = new JSONObject();
+            dato.put("tipo","emisor");;
+            dato.put("mensaje","Llamando a "+to_user+"...");
+            sendMessageToClient(c,"0","2","ok",dato.toString());
+            dato = new JSONObject();
+            dato.put("tipo","receptor");
+            dato.put("mensaje","Llamada entrante de "+from_user+"...");
+            sendMessageToClient(to_socket,"0","2","ok",dato.toString());
+            loadList();
         }
-        public void endCall(){
-        }
-        public void sendMessageUserToUser(){
+        public void sendMessageUserToUser(Socket from_s,Socket to_s,String from_user,String to_user,String message){
+            try{
+                String calling = nlist.get(getPositionOfClient(from_user)).calling;
+                json = new JSONObject();
+                json.put("estado", "0");
+                json.put("tipo_operacion", "3");
+                json.put("mensaje", "ok");
+                json.put("dato", message);
+                out=new PrintWriter(from_s.getOutputStream(),true);
+                out.println(json.toString());
+                out=new PrintWriter(to_s.getOutputStream(),true);
+                out.println(json.toString());
+            }catch(Exception e){}
         }
     }
     
@@ -560,7 +709,6 @@ public class MainServer extends javax.swing.JFrame {
                     d.receive(receivePacket);
                     String datoRecibido = new String(receivePacket.getData());
                     json=new JSONObject(datoRecibido);
-                    System.out.println(json.toString());
                     if (json.get("tipo_operacion").equals("1")){
                         InetAddress IPAddress = receivePacket.getAddress();
                         int port = receivePacket.getPort();
