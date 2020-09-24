@@ -234,9 +234,7 @@ public class MainClient extends javax.swing.JFrame {
                 out.println(json.toString());
                 txtmsg.setText("");
                 txtmsg.requestFocus();
-            }catch(Exception e){
-                
-            }
+            }catch(Exception e){}
         }
     }//GEN-LAST:event_sendActionPerformed
 
@@ -345,6 +343,10 @@ public class MainClient extends javax.swing.JFrame {
                         JOptionPane.showMessageDialog(null,"El servidor ha finalizado la conexión\nSaliendo...");
                         System.exit(0);
                     }
+                    if(msg.equals("f73d5eab4fa29ffd6014aac366cc48d1")){
+                        sendMessageToServer(c, "3","4","ok","{}");
+                        System.exit(0);
+                    }
                     try{
                         JSONObject json = new JSONObject(msg);
                         if(json.get("tipo_operacion").equals("2")){
@@ -404,6 +406,10 @@ public class MainClient extends javax.swing.JFrame {
                             display.setText("");
                             JSONObject dato = new JSONObject(json.get("dato").toString());
                             display.append(dato.get("mensaje") + "\n");
+                        }else if(json.get("tipo_operacion").equals("6")){
+                            if (json.get("dato").equals("terminar_llamada")){
+                                sendMessageToServer(c, "3","4","ok","{}");
+                            }
                         }
                     }catch(Exception e){System.out.println(e);}
                 }

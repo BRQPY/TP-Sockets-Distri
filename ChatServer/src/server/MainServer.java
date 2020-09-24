@@ -53,7 +53,7 @@ public class MainServer extends javax.swing.JFrame {
 
         jInternalFrame1 = new javax.swing.JInternalFrame();
         txtcmd = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        send = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         cid = new javax.swing.JTextField();
         listComands = new javax.swing.JButton();
@@ -87,10 +87,10 @@ public class MainServer extends javax.swing.JFrame {
 
         txtcmd.setBackground(new java.awt.Color(255, 255, 204));
 
-        jButton1.setText("Enviar");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        send.setText("Enviar");
+        send.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                sendActionPerformed(evt);
             }
         });
 
@@ -123,7 +123,7 @@ public class MainServer extends javax.swing.JFrame {
                         .addGap(37, 37, 37)
                         .addComponent(sendToAll)
                         .addGap(80, 80, 80)
-                        .addComponent(jButton1)
+                        .addComponent(send)
                         .addGap(18, 18, 18)
                         .addComponent(listComands)))
                 .addContainerGap(32, Short.MAX_VALUE))
@@ -137,10 +137,10 @@ public class MainServer extends javax.swing.JFrame {
                 .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(cid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1)
+                    .addComponent(send)
                     .addComponent(listComands)
                     .addComponent(sendToAll))
-                .addContainerGap(51, Short.MAX_VALUE))
+                .addContainerGap(54, Short.MAX_VALUE))
         );
 
         jInternalFrame2.setTitle("Usuarios conectados");
@@ -182,7 +182,7 @@ public class MainServer extends javax.swing.JFrame {
         );
         jInternalFrame2Layout.setVerticalGroup(
             jInternalFrame2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
         );
 
         jInternalFrame3.setTitle("Crear usuario");
@@ -237,7 +237,7 @@ public class MainServer extends javax.swing.JFrame {
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(createUser)
-                .addContainerGap(51, Short.MAX_VALUE))
+                .addContainerGap(54, Short.MAX_VALUE))
         );
 
         jInternalFrame4.setTitle("Modificar contraseña de usuario");
@@ -358,20 +358,67 @@ public class MainServer extends javax.swing.JFrame {
         cid.setText(data);
     }//GEN-LAST:event_namelistMouseClicked
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        if(!txtcmd.getText().equals("") && !cid.getText().equals(""))
+    private void sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendActionPerformed
+        if(txtcmd.getText().equals("")){
+            //no hay texto
+            return;
+        }
+        if((!cid.getText().equals("") || sendToAll.isSelected()))
         {
-            Socket cl=slist.get(Integer.parseInt(cid.getText()));
-            try
-            {
-                out=new PrintWriter(cl.getOutputStream(),true);
-                out.println("cmd:"+txtcmd.getText());
-            }catch(Exception e){}
+            ArrayList options = new ArrayList<String>();
+            options.add("desconectar");
+            options.add("terminar_llamada");
+            if(!(options.indexOf(txtcmd.getText())>=0)){
+                JOptionPane.showMessageDialog(null,"Comando inválido");
+            }
+            if (sendToAll.isSelected()){
+                //enviar a todos
+                try{
+                    for(int i=0;i<slist.size();i++)
+                    {
+                        out=new PrintWriter(slist.get(i).getOutputStream(),true);
+                        if(txtcmd.getText().equals("desconectar")){
+                            out.println("f73d5eab4fa29ffd6014aac366cc48d1");
+                        }else if(txtcmd.getText().equals("terminar_llamada")){
+                            json = new JSONObject();
+                            json.put("estado", "0");
+                            json.put("tipo_operacion", "6");
+                            json.put("mensaje", "ok");
+                            json.put("dato", "terminar_llamada");
+                            out.println(json.toString());
+                        }
+                    }
+                }catch(Exception e){}
+            }else{
+                //enviar a uno
+                if (getPositionOfClient(cid.getText())!=-1){
+                    Socket send_to = slist.get(getPositionOfClient(cid.getText()));
+                    try{
+                        out=new PrintWriter(send_to.getOutputStream(),true);
+                        if(txtcmd.getText().equals("desconectar")){
+                            out.println("f73d5eab4fa29ffd6014aac366cc48d1");
+                        }else if(txtcmd.getText().equals("terminar_llamada")){
+                            json = new JSONObject();
+                            json.put("estado", "0");
+                            json.put("tipo_operacion", "6");
+                            json.put("mensaje", "ok");
+                            json.put("dato", "terminar_llamada");
+                            out.println(json.toString());
+                        }
+                    }catch(Exception e){}
+                    
+                }else{
+                    
+                } 
+            }
+        }else{
+            //usuario no seleccionado
+            JOptionPane.showMessageDialog(null,"Seleccione un usuario");
         }
         txtcmd.setText("");
         cid.setText("");
         txtcmd.requestFocus();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_sendActionPerformed
 
     private void createUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createUserActionPerformed
         User u=new User(username_create.getText(),password_create.getText());
@@ -412,7 +459,6 @@ public class MainServer extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField cid;
     private javax.swing.JButton createUser;
-    private javax.swing.JButton jButton1;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JInternalFrame jInternalFrame2;
     private javax.swing.JInternalFrame jInternalFrame3;
@@ -428,6 +474,7 @@ public class MainServer extends javax.swing.JFrame {
     private javax.swing.JTable namelist;
     private javax.swing.JTextField password_create;
     private javax.swing.JTextField password_modify;
+    private javax.swing.JButton send;
     private javax.swing.JCheckBox sendToAll;
     private javax.swing.JTextField txtcmd;
     private javax.swing.JTextField username_create;
@@ -544,9 +591,15 @@ public class MainServer extends javax.swing.JFrame {
                                 to_user = nlist.get(getPositionOfClient(username)).calling;
                                 if (getPositionOfClient(to_user)!=-1){
                                     to_socket = slist.get(getPositionOfClient(to_user));
-                                    endCall(c,to_socket,username,to_user,"0");  
+                                    if(json.get("estado").equals("0")){ 
+                                        endCall(c,to_socket,username,to_user,"0");  
+                                    }else{
+                                        endCall(c,to_socket,username,to_user,"3");  
+                                    }
                                 }else{
-                                    sendMessageToClient(c,"99","3","no existe llamada","no se encuentra en una llamada");
+                                    if(!json.get("estado").equals("3")){
+                                        sendMessageToClient(c,"99","3","no existe llamada","no se encuentra en una llamada");
+                                    }
                                 }
                             }
                         } else if (json.get("tipo_operacion").equals("5")) {
@@ -571,6 +624,7 @@ public class MainServer extends javax.swing.JFrame {
                             }
                         } 
                     }
+                    System.out.println("poronga");
                     removeClient(getPositionOfClient(username));
                     loadList();
                 }catch(Exception e){sendMessageToClient(c,"4","2","",e.getMessage());}
@@ -615,22 +669,14 @@ public class MainServer extends javax.swing.JFrame {
                     dato = new JSONObject();
                     dato.put("mensaje","Llamada no contestada");
                     sendMessageToClient(to_socket,"2","4","no contestado",dato.toString());
+                }else if(code.equals("3")){
+                    dato = new JSONObject();
+                    dato.put("mensaje","Llamada finalizada por el servidor");
+                    sendMessageToClient(to_socket,"3","4","ok",dato.toString());
+                    sendMessageToClient(from_socket,"3","4","ok",dato.toString());
                 }
                 loadList();
             }catch(Exception e){sendMessageToClient(to_socket,"3","4","error",e.getMessage());}
-        }
-        public void sendToAllClients(String message)
-        {
-            Socket so;
-            PrintWriter out;
-            for(int x=0;x<slist.size();x++)
-            {
-                try{
-                    so=slist.get(x);
-                    out=new PrintWriter(so.getOutputStream(),true);
-                    out.println(message);
-                }catch(Exception e){}
-            }
         }
         public void sendMessageToClient(Socket c, String estado, String tipo_operacion, String mensaje, String dato){
             try{
