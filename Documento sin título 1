@@ -1,4 +1,0 @@
-sudo apt-get install libpostgresql-jdbc-java libpostgresql-jdbc-java-doc
-sudo gedit ~/bashrc
-##add path
-export CLASSPATH=$CLASSPATH:/user/share/java/postgresql-<version>.jar
