@@ -1,0 +1,11 @@
+CREATE TABLE public.connection_history (
+    origin character varying,
+    destination character varying,
+    date_time timestamp with time zone
+)
+CREATE TABLE public."user" (
+    username character varying NOT NULL,
+    password character varying,
+    id integer NOT NULL
+);
+
