@@ -14,7 +14,7 @@ Trabajo práctico de la materia Sistemas Distribuidos de la carrera de Ing en In
 - Instalar JDK 1.8 
 - Abrir el menú File y submenú Open Project. Seleccionar la carpeta del proyecto "TP-Sockets-Distri". Marcar los proyectos de ChatCliente y ChatServer y seleccionar Open Project.
 
-3. Crear la estructura de la Base de Datos:
+3. Crear la estructura de la Base de Datos: Se ejecuta un script llamado "call_system.sql" para crear la base de datos. El script crea la base de datos call_system y las tablas connection_history (contiene el log) y user (contiene el nombre y la contraseña).
 
 4. Poblar los datos iniciales en la Base de Datos:
 
