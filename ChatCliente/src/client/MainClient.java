@@ -67,12 +67,11 @@ public class MainClient extends javax.swing.JFrame {
                 r.start();
                 setTitle("Usuario: " + username); 
             }else{
-                JOptionPane.showMessageDialog(null,json.get("mensaje"));
+                JOptionPane.showMessageDialog(null,json.get("dato"));
                 System.exit(0);
             }
             clientSocket = new DatagramSocket();
         }catch(Exception e){
-            System.out.println(e);
             JOptionPane.showMessageDialog(null,"No se pudo conectar al servidor: "+e.toString());
             System.exit(0);
         }
@@ -80,6 +79,7 @@ public class MainClient extends javax.swing.JFrame {
     
     public void loadList()
     {
+        //cargar usuarios conectados
         while(namelist.getRowCount()>0)
         {
             ((DefaultTableModel)namelist.getModel()).removeRow(0);
@@ -209,6 +209,7 @@ public class MainClient extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        //cerrar la ventana
         try
         {
             json = new JSONObject();
@@ -223,6 +224,7 @@ public class MainClient extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosing
 
     private void sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendActionPerformed
+        //enviar mensaje a otro usuario
         if(!txtmsg.getText().equals(""))
         {
             try{
@@ -239,6 +241,7 @@ public class MainClient extends javax.swing.JFrame {
     }//GEN-LAST:event_sendActionPerformed
 
     private void getUserConnectionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getUserConnectionsActionPerformed
+        //ver usuarios conectados
         byte[] receiveData = new byte[1024];
         sendDatagramToServer(serverIP,puertoServidorUDP,"0","1","ok");
         try{
@@ -255,6 +258,7 @@ public class MainClient extends javax.swing.JFrame {
     }//GEN-LAST:event_getUserConnectionsActionPerformed
 
     private void callClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_callClientActionPerformed
+        //lamar a cliente
         if (namelist.getSelectedRow() == -1){
             JOptionPane.showMessageDialog(null,"Seleccione un usuario para llamar");
         }else{
@@ -276,6 +280,7 @@ public class MainClient extends javax.swing.JFrame {
     }//GEN-LAST:event_callClientActionPerformed
 
     private void endCallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endCallActionPerformed
+        //terminar llamada
         try{
             json = new JSONObject();
             json.put("tipo_operacion","4");
@@ -316,6 +321,7 @@ public class MainClient extends javax.swing.JFrame {
     private List<String> nlist;
     
     public void sendDatagramToServer(String serverIP,int serverPort,String estado,String tipo_operacion,String mensaje){
+        //enviar datagrama UDP
         try{
             byte[] sendData = new byte[1024];
             json = new JSONObject();
@@ -403,10 +409,12 @@ public class MainClient extends javax.swing.JFrame {
                                 JOptionPane.showMessageDialog(null,json.get("dato"));
                             }
                         }else if(json.get("tipo_operacion").equals("5")){
+                            //contestar llamada
                             display.setText("");
                             JSONObject dato = new JSONObject(json.get("dato").toString());
                             display.append(dato.get("mensaje") + "\n");
                         }else if(json.get("tipo_operacion").equals("6")){
+                            //recibir comando del servidor
                             if (json.get("dato").equals("terminar_llamada")){
                                 sendMessageToServer(c, "3","4","ok","{}");
                             }

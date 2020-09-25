@@ -3,7 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/home/majogrance/Escritorio/Facultad/Sistemas%20Distribuidos/TP-Sockets-Distri-master/ChatServer/src/entity/User.java</file>
             <file>file:/home/majogrance/Escritorio/Facultad/Sistemas%20Distribuidos/TP-Sockets-Distri-master/ChatServer/src/server/MainServer.java</file>
+            <file>file:/home/majogrance/Escritorio/Facultad/Sistemas%20Distribuidos/TP-Sockets-Distri-master/ChatServer/src/bd/ConnectionHistoryDAO.java</file>
+            <file>file:/home/majogrance/Escritorio/Facultad/Sistemas%20Distribuidos/TP-Sockets-Distri-master/ChatServer/src/entity/ConnectionHistory.java</file>
         </group>
     </open-files>
 </project-private>

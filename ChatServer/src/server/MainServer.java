@@ -17,7 +17,13 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.json.JSONObject;
 import bd.UserDAO;
+import bd.ConnectionHistoryDAO;
 import entity.User;
+import java.sql.Timestamp;
+import java.util.List;
+import entity.ConnectionHistory;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 
 public class MainServer extends javax.swing.JFrame {
     int puertoServidorTCP = 1565;
@@ -30,7 +36,12 @@ public class MainServer extends javax.swing.JFrame {
         System.setProperty("java.net.preferIPv4Stack" , "true");
         try
         {
-            s=new ServerSocket(puertoServidorTCP);
+            try{
+               s=new ServerSocket(puertoServidorTCP); 
+            }catch(Exception e){
+                JOptionPane.showMessageDialog(null,"No se puede abrir el puerto: 1565");
+                System.exit(1);
+            }
             slist=new ArrayList<>();
             nlist=new ArrayList<>();
             unlist=new ArrayList<>();
@@ -67,12 +78,9 @@ public class MainServer extends javax.swing.JFrame {
         username_create = new javax.swing.JTextField();
         password_create = new javax.swing.JTextField();
         createUser = new javax.swing.JButton();
-        jInternalFrame4 = new javax.swing.JInternalFrame();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        username_modify = new javax.swing.JTextField();
-        password_modify = new javax.swing.JTextField();
-        modifyUser = new javax.swing.JButton();
+        jInternalFrame5 = new javax.swing.JInternalFrame();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        connection_list = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Servidor de llamadas");
@@ -115,18 +123,19 @@ public class MainServer extends javax.swing.JFrame {
             .addGroup(jInternalFrame1Layout.createSequentialGroup()
                 .addGap(39, 39, 39)
                 .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtcmd, javax.swing.GroupLayout.PREFERRED_SIZE, 810, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtcmd)
+                    .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                        .addComponent(sendToAll)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(send)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(listComands)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jInternalFrame1Layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cid, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(37, 37, 37)
-                        .addComponent(sendToAll)
-                        .addGap(80, 80, 80)
-                        .addComponent(send)
-                        .addGap(18, 18, 18)
-                        .addComponent(listComands)))
-                .addContainerGap(32, Short.MAX_VALUE))
+                        .addComponent(cid)))
+                .addContainerGap())
         );
         jInternalFrame1Layout.setVerticalGroup(
             jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -136,11 +145,14 @@ public class MainServer extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(cid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(send)
-                    .addComponent(listComands)
-                    .addComponent(sendToAll))
-                .addContainerGap(54, Short.MAX_VALUE))
+                    .addComponent(cid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sendToAll)
+                    .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(send)
+                        .addComponent(listComands)))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
 
         jInternalFrame2.setTitle("Usuarios conectados");
@@ -178,11 +190,11 @@ public class MainServer extends javax.swing.JFrame {
         jInternalFrame2.getContentPane().setLayout(jInternalFrame2Layout);
         jInternalFrame2Layout.setHorizontalGroup(
             jInternalFrame2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
         );
         jInternalFrame2Layout.setVerticalGroup(
             jInternalFrame2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
         );
 
         jInternalFrame3.setTitle("Crear usuario");
@@ -213,7 +225,7 @@ public class MainServer extends javax.swing.JFrame {
                         .addContainerGap()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(username_create, javax.swing.GroupLayout.PREFERRED_SIZE, 328, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(username_create, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jInternalFrame3Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel3)
@@ -222,7 +234,7 @@ public class MainServer extends javax.swing.JFrame {
                     .addGroup(jInternalFrame3Layout.createSequentialGroup()
                         .addGap(161, 161, 161)
                         .addComponent(createUser)))
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jInternalFrame3Layout.setVerticalGroup(
             jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -237,57 +249,31 @@ public class MainServer extends javax.swing.JFrame {
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(createUser)
-                .addContainerGap(54, Short.MAX_VALUE))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
 
-        jInternalFrame4.setTitle("Modificar contraseña de usuario");
-        jInternalFrame4.setVisible(true);
+        jInternalFrame5.setTitle("Log de conexiones");
+        jInternalFrame5.setVisible(true);
 
-        jLabel4.setText("Usuario");
+        connection_list.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
 
-        jLabel5.setText("Nueva contraseña");
+            },
+            new String [] {
+                "Origen", "Destino", "Fecha/Hora"
+            }
+        ));
+        jScrollPane2.setViewportView(connection_list);
 
-        username_modify.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
-
-        password_modify.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
-
-        modifyUser.setText("Modificar");
-
-        javax.swing.GroupLayout jInternalFrame4Layout = new javax.swing.GroupLayout(jInternalFrame4.getContentPane());
-        jInternalFrame4.getContentPane().setLayout(jInternalFrame4Layout);
-        jInternalFrame4Layout.setHorizontalGroup(
-            jInternalFrame4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jInternalFrame4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jInternalFrame4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jInternalFrame4Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(username_modify))
-                    .addGroup(jInternalFrame4Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jInternalFrame4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jInternalFrame4Layout.createSequentialGroup()
-                                .addGap(12, 12, 12)
-                                .addComponent(modifyUser))
-                            .addComponent(password_modify, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(30, Short.MAX_VALUE))
+        javax.swing.GroupLayout jInternalFrame5Layout = new javax.swing.GroupLayout(jInternalFrame5.getContentPane());
+        jInternalFrame5.getContentPane().setLayout(jInternalFrame5Layout);
+        jInternalFrame5Layout.setHorizontalGroup(
+            jInternalFrame5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
         );
-        jInternalFrame4Layout.setVerticalGroup(
-            jInternalFrame4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jInternalFrame4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jInternalFrame4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(username_modify, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jInternalFrame4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(password_modify, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(modifyUser)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        jInternalFrame5Layout.setVerticalGroup(
+            jInternalFrame5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -296,25 +282,25 @@ public class MainServer extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(26, 26, 26)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jInternalFrame1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jInternalFrame3)
                     .addComponent(jInternalFrame2)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jInternalFrame3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jInternalFrame4)))
-                .addContainerGap())
+                    .addComponent(jInternalFrame1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jInternalFrame5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(22, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jInternalFrame1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jInternalFrame3)
-                    .addComponent(jInternalFrame4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jInternalFrame2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jInternalFrame5, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(jInternalFrame1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jInternalFrame3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jInternalFrame2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -458,27 +444,24 @@ public class MainServer extends javax.swing.JFrame {
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField cid;
+    private javax.swing.JTable connection_list;
     private javax.swing.JButton createUser;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JInternalFrame jInternalFrame2;
     private javax.swing.JInternalFrame jInternalFrame3;
-    private javax.swing.JInternalFrame jInternalFrame4;
+    private javax.swing.JInternalFrame jInternalFrame5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton listComands;
-    private javax.swing.JButton modifyUser;
     private javax.swing.JTable namelist;
     private javax.swing.JTextField password_create;
-    private javax.swing.JTextField password_modify;
     private javax.swing.JButton send;
     private javax.swing.JCheckBox sendToAll;
     private javax.swing.JTextField txtcmd;
     private javax.swing.JTextField username_create;
-    private javax.swing.JTextField username_modify;
     // End of variables declaration//GEN-END:variables
     
     public void getCallHistoryList(){
@@ -487,7 +470,7 @@ public class MainServer extends javax.swing.JFrame {
     }
     public void getConnectionsHistory(){
     }
-    public void loadList(){
+    public void loadUserConnectedList(){
         while(namelist.getRowCount()>0)
         {
             ((DefaultTableModel)namelist.getModel()).removeRow(0);
@@ -500,6 +483,23 @@ public class MainServer extends javax.swing.JFrame {
             ((DefaultTableModel)namelist.getModel()).setValueAt(u.username, row, 0);
             ((DefaultTableModel)namelist.getModel()).setValueAt(u.status, row, 1);
             ((DefaultTableModel)namelist.getModel()).setValueAt(u.calling, row, 2);
+            row++;
+        }
+    }
+    public void loadConnectionHistoryList(){
+        ConnectionHistoryDAO chdao = new ConnectionHistoryDAO();
+        List<ConnectionHistory> chlist = chdao.selectAll();
+        while(connection_list.getRowCount()>0)
+        {
+            ((DefaultTableModel)connection_list.getModel()).removeRow(0);
+        }
+        int row=0;
+        for(int i=0;i<chlist.size();i++){
+            ConnectionHistory ch = chlist.get(i);
+            ((DefaultTableModel)connection_list.getModel()).addRow(new Object[]{});
+            ((DefaultTableModel)connection_list.getModel()).setValueAt(ch.getOrigin().toString(), row, 0);
+            ((DefaultTableModel)connection_list.getModel()).setValueAt(ch.getDestination().toString(), row, 1);
+            ((DefaultTableModel)connection_list.getModel()).setValueAt(ch.getDateTime().toString(), row, 2);
             row++;
         }
     }
@@ -516,10 +516,18 @@ public class MainServer extends javax.swing.JFrame {
         private int tid;
         public void run()
         {
+            loadConnectionHistoryList();
             while(true)
             {
                 try {
                     c=s.accept();
+                    String destination = s.getInetAddress().getHostAddress()+":"+puertoServidorTCP;
+                    String origin = c.getInetAddress().getHostAddress()+":"+c.getPort();
+                    Timestamp date_time = new Timestamp(System.currentTimeMillis());
+                    ConnectionHistory ch = new ConnectionHistory(origin,destination,date_time);
+                    ConnectionHistoryDAO chdao = new ConnectionHistoryDAO();
+                    chdao.createConnectionHistory(ch);
+                    loadConnectionHistoryList();
                     brc=new BufferedReader(new InputStreamReader(c.getInputStream()));
                     JSONObject json = new JSONObject(brc.readLine());
                     username=json.getString("username").trim();
@@ -529,7 +537,7 @@ public class MainServer extends javax.swing.JFrame {
                     slist.add(c);
                     unlist.add(username);
                     nlist.add(new UserConnected(username, "Libre",""));
-                    loadList();
+                    loadUserConnectedList();
                     ProcessClient t=new ProcessClient(tid, username, c, password);
                     t.start();
                     tid++;
@@ -558,7 +566,7 @@ public class MainServer extends javax.swing.JFrame {
                 String msg;
                 try{
                     brc=new BufferedReader(new InputStreamReader(c.getInputStream()));
-                    loadList();
+                    loadUserConnectedList();
                     while((msg=brc.readLine())!=null)
                     {
                         json=new JSONObject(msg);
@@ -624,9 +632,8 @@ public class MainServer extends javax.swing.JFrame {
                             }
                         } 
                     }
-                    System.out.println("poronga");
                     removeClient(getPositionOfClient(username));
-                    loadList();
+                    loadUserConnectedList();
                 }catch(Exception e){sendMessageToClient(c,"4","2","",e.getMessage());}
             }
         }
@@ -639,7 +646,7 @@ public class MainServer extends javax.swing.JFrame {
             try{
                 nlist.get(getPositionOfClient(from_user)).status = "Ocupado";
                 nlist.get(getPositionOfClient(to_user)).status = "Ocupado";
-                loadList();
+                loadUserConnectedList();
                 JSONObject dato = new JSONObject();
                 dato.put("mensaje", "Llamada iniciada con "+to_user);
                 sendMessageToClient(from_socket,"0","5","ok",dato.toString());
@@ -675,7 +682,7 @@ public class MainServer extends javax.swing.JFrame {
                     sendMessageToClient(to_socket,"3","4","ok",dato.toString());
                     sendMessageToClient(from_socket,"3","4","ok",dato.toString());
                 }
-                loadList();
+                loadUserConnectedList();
             }catch(Exception e){sendMessageToClient(to_socket,"3","4","error",e.getMessage());}
         }
         public void sendMessageToClient(Socket c, String estado, String tipo_operacion, String mensaje, String dato){
@@ -725,7 +732,7 @@ public class MainServer extends javax.swing.JFrame {
             dato.put("tipo","receptor");
             dato.put("mensaje","Llamada entrante de "+from_user+"...");
             sendMessageToClient(to_socket,"0","2","ok",dato.toString());
-            loadList();
+            loadUserConnectedList();
         }
         public void sendMessageUserToUser(Socket from_s,Socket to_s,String from_user,String to_user,String message){
             try{
@@ -759,7 +766,6 @@ public class MainServer extends javax.swing.JFrame {
                         InetAddress IPAddress = receivePacket.getAddress();
                         int port = receivePacket.getPort();
                         json = new JSONObject();
-                        System.out.println(unlist);
                         sendDatagramToUser(IPAddress, port,"0","1", unlist.toString());
                     }
                 }catch(Exception e){JOptionPane.showMessageDialog(null,e.getMessage());}      
